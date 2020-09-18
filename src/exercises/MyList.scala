@@ -1,6 +1,7 @@
 package exercises
 
-abstract class MyList {
+// Covariant type A
+abstract class MyList[+A] {
 
   /*
     Singally linked list
@@ -10,34 +11,39 @@ abstract class MyList {
       add(int) => new list with this element added
       toString => a string representation of the list
    */
-  def head: Int
-  def tail: MyList
+
+  /*
+    Expand to be generic
+   */
+
+  def head: A
+  def tail: MyList[A]
   def isEmpty: Boolean
-  def add(element: Int): MyList
+  def add[B >: A](element: B): MyList[B]
   def printElements: String
   override def toString: String = "[" + printElements + "]"
 }
 
-object Empty extends MyList {
-  override def head: Int = throw new NoSuchElementException
+object Empty extends MyList[Nothing] {
+  override def head: Nothing = throw new NoSuchElementException
 
-  override def tail: MyList = throw new NoSuchElementException
+  override def tail: MyList[Nothing] = throw new NoSuchElementException
 
   override def isEmpty: Boolean = true
 
-  override def add(element: Int): MyList = new NList(element, Empty)
+  override def add[B >: Nothing](element: B): MyList[B] = new NList(element, Empty)
 
   override def printElements: String = ""
 }
 
-class NList(h: Int, t: MyList) extends MyList {
-  override def head: Int = h
+class NList[+A](h: A, t: MyList[A]) extends MyList[A] {
+  override def head: A = h
 
-  override def tail: MyList = t
+  override def tail: MyList[A] = t
 
   override def isEmpty: Boolean = false
 
-  override def add(element: Int): MyList = new NList(element, this)
+  override def add[B >: A](element: B): MyList[B] = new NList(element, this)
 
   override def printElements: String =
     if (t.isEmpty) "" + h
@@ -53,4 +59,10 @@ object ListTest extends App {
   println(list.tail.tail.head) // 3
   println(list.toString)
   println(list2.toString)
+
+  val listOfInts: MyList[Int] = new NList(1, new NList(2, new NList(3, Empty)))
+  val listOfStrings: MyList[String] = new NList("Hello", new NList("World", Empty))
+
+  println(listOfInts.toString)
+  println(listOfStrings.toString)
 }
